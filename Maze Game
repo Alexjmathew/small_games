@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Choices Maze Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid #00796b;
+            background-color: #ffffff;
+        }
+        #player {
+            width: 20px;
+            height: 20px;
+            background-color: #4CAF50;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            border-radius: 50%;
+        }
+        .goal {
+            width: 30px;
+            height: 30px;
+            background-color: #FF5722;
+            position: absolute;
+            top: 350px;
+            left: 350px;
+            border-radius: 50%;
+        }
+        .obstacle {
+            position: absolute;
+            background-color: #b0bec5;
+            border-radius: 5px;
+        }
+        #score {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        #start-btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #00796b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #start-btn:hover {
+            background-color: #004d40;
+        }
+    </style>
+</head>
+<body>
+    <h1>Healthy Choices Maze Game</h1>
+    <p>Navigate to the goal while avoiding obstacles!</p>
+    <div id="score">Score: 0</div>
+    <button id="start-btn">Start Game</button>
+    <div id="game-container">
+        <div id="player"></div>
+        <div class="goal"></div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const goal = document.querySelector('.goal');
+        const startBtn = document.getElementById('start-btn');
+        const scoreDisplay = document.getElementById('score');
+        const gameContainer = document.getElementById('game-container');
+
+        let score = 0;
+        let obstacles = [];
+        let gameRunning = false;
+
+        function createObstacles() {
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
+
+            for (let i = 0; i < 5; i++) {
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.style.width = `${Math.random() * 50 + 20}px`;
+                obstacle.style.height = `${Math.random() * 50 + 20}px`;
+                obstacle.style.top = `${Math.random() * 350}px`;
+                obstacle.style.left = `${Math.random() * 350}px`;
+
+                gameContainer.appendChild(obstacle);
+                obstacles.push(obstacle);
+            }
+        }
+
+        function checkCollision(rect1, rect2) {
+            return (
+                rect1.left < rect2.right &&
+                rect1.right > rect2.left &&
+                rect1.top < rect2.bottom &&
+                rect1.bottom > rect2.top
+            );
+        }
+
+        function movePlayer(event) {
+            if (!gameRunning) return;
+
+            const playerRect = player.getBoundingClientRect();
+            const containerRect = gameContainer.getBoundingClientRect();
+
+            switch (event.key) {
+                case 'ArrowUp':
+                    if (playerRect.top > containerRect.top) {
+                        player.style.top = `${player.offsetTop - 10}px`;
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (playerRect.bottom < containerRect.bottom) {
+                        player.style.top = `${player.offsetTop + 10}px`;
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (playerRect.left > containerRect.left) {
+                        player.style.left = `${player.offsetLeft - 10}px`;
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (playerRect.right < containerRect.right) {
+                        player.style.left = `${player.offsetLeft + 10}px`;
+                    }
+                    break;
+            }
+
+            const goalRect = goal.getBoundingClientRect();
+            if (checkCollision(playerRect, goalRect)) {
+                score += 10;
+                scoreDisplay.textContent = `Score: ${score}`;
+                alert('You reached the goal!');
+                resetGame();
+            }
+
+            for (let obstacle of obstacles) {
+                const obstacleRect = obstacle.getBoundingClientRect();
+                if (checkCollision(playerRect, obstacleRect)) {
+                    alert('Game Over! You hit an obstacle.');
+                    resetGame();
+                    break;
+                }
+            }
+        }
+
+        function resetGame() {
+            gameRunning = false;
+            document.removeEventListener('keydown', movePlayer);
+            player.style.top = '10px';
+            player.style.left = '10px';
+        }
+
+        function startGame() {
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            createObstacles();
+            gameRunning = true;
+            document.addEventListener('keydown', movePlayer);
+        }
+
+        startBtn.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
